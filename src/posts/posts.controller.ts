@@ -1,4 +1,4 @@
-import {Body, Controller,Post, Get, Param} from '@nestjs/common';
+import {Body, Controller, Post, Get, Param, Req} from '@nestjs/common';
 import {PostsService} from "./posts.service";
 
 import {CreatePostDto} from "./DTO/create-post.dto";
