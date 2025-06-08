@@ -3,8 +3,8 @@ import { User } from "./user";
 
 @Entity('friend_requests')
 export class FriendRequest {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn("uuid")
+    id: string;
 
     @Column({ name: 'sender_id' })
     senderId: string;

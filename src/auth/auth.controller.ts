@@ -1,8 +1,9 @@
-import {Body, Controller, Get, HttpCode, HttpStatus} from '@nestjs/common';
+import {Body, Controller, Get, HttpCode, HttpStatus, UseGuards} from '@nestjs/common';
 import {AuthService} from "./auth.service";
 import {Post} from "@nestjs/common";
 import {AuthDto} from "./dto/auth.dto";
 import {UserAttributes} from "@supabase/supabase-js";
+import {AuthGuard} from "../common/guards/auth-guard.guard";
 
 @Controller('api/auth')
 export class AuthController {

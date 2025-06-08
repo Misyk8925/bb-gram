@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import {SupabaseService} from "../supabase/supabase.service";
 
 @Injectable()
-export class AuthGuardGuard implements CanActivate {
+export class AuthGuard implements CanActivate {
   constructor(private supabaseService: SupabaseService) {
   }
   async canActivate(
