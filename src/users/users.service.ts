@@ -79,7 +79,7 @@ export class UsersService {
     }
 
     async sendFriendRequest(senderId: string, username: string) {
-        console.log(senderId, username);
+
         const sender = await this.userRepository.findOne({where: {id: senderId}});
         if (!sender) {
             throw new Error('Sender not found');
@@ -88,6 +88,25 @@ export class UsersService {
         if (!receiver) {
             throw new Error('Receiver not found');
         }
+
+        if (sender.id === receiver.id) {
+            throw new Error('Cannot send friend request to yourself');
+        }
+
+        const checkFriendship = await this.friendshipRepository.findOne({where: {userAId: sender.id, userBId: receiver.id}});
+        if (checkFriendship) {
+            throw new Error('Already friends');
+        }
+        const checkFriendRequest = await this.friendRequestRepository.findOne({where: {senderId: sender.id, receiverId: receiver.id}});
+        if (checkFriendRequest) {
+            throw new Error('Friend request already sent');
+        }
+
+        const checkFriendRequest2 = await this.friendRequestRepository.findOne({where: {senderId: receiver.id, receiverId: sender.id}});
+        if (checkFriendRequest2) {
+            throw new Error('Friend request already sent');
+        }
+
         const friendRequest = new FriendRequest();
         friendRequest.senderId = senderId;
         friendRequest.receiverId = receiver.id;
