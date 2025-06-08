@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import {MiddlewareConsumer, Module} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from "@nestjs/mongoose";
@@ -12,6 +12,7 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user';
 import { FriendRequest } from './users/entities/friendRequest';
 import { Friendship } from './users/entities/friendship';
+import {RequestLoggerMiddleware} from "./common/middleware/request.logger.middleware";
 
 dotenv.config();
 
@@ -40,4 +41,8 @@ dotenv.config();
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumner: MiddlewareConsumer) {
+    consumner.apply(RequestLoggerMiddleware).forRoutes('*');
+  }
+}
