@@ -27,4 +27,21 @@ export class UsersService {
         user.description = description;
         return await this.userRepository.save(user);
     }
+
+    async updateUser(name: string, username: string, imgUrl: string, description: string) {
+        const user = await this.userRepository.findOne({where: {username}});
+        if (!user) {
+            throw new Error('User not found');
+        }
+        try {
+            user.name = name;
+            user.imgUrl = imgUrl;
+            user.description = description;
+            return await this.userRepository.save(user);
+        }
+        catch (error) {
+            throw new Error('Failed to update user: ', error);
+        }
+
+    }
 }
