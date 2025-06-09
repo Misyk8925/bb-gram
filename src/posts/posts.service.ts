@@ -15,7 +15,7 @@ export class PostsService {
     ) {
     }
 
-    async createPost(title: string, description: string, img: string): Promise<Post> {
+    async createPost(authorId: string, title: string, description: string, img: string): Promise<Post> {
         try {
             const postActions = new this.postActionsModel({
                 likes: 0,
@@ -24,11 +24,18 @@ export class PostsService {
                 isReposted: false
             });
             await postActions.save();
-            const post = new this.postModel({title, description, img, actions: postActions});
+            const post = new this.postModel(
+                {
+                    authorId,
+                    title,
+                    description,
+                    img,
+                    actions: postActions
+                });
             await post.save();
             return post;
         } catch (error) {
-            throw new Error('Failed to create post');
+            throw new Error('Failed to create post', error);
         }
     }
 
@@ -60,24 +67,45 @@ export class PostsService {
         }
     }
 
-    async addComment(postId: string, text: string) {
+    async addComment(postId: string, text: string, authorId: string) {
         try {
+            // Находим пост
             const post = await this.postModel.findById(postId).exec();
             if (!post) {
                 throw new Error('Post not found');
             }
-            const comment = new this.commentModel({text, date: new Date(), isLiked: false});
+
+            // Создаем комментарий
+            const commentId = new mongoose.Types.ObjectId();
+            const comment = new this.commentModel({
+                _id: commentId,
+                text,
+                date: new Date(),
+                isLiked: false,
+                authorId
+            });
+
+            // Сохраняем комментарий
             await comment.save();
+
+            // Добавляем ссылку на комментарий в пост
             post.comments.push({
-                id: new mongoose.Types.ObjectId().toString(),
+                id: commentId.toString(),
+                authorId,
                 text,
                 date: new Date(),
                 isLiked: false,
             });
+
+            // Сохраняем пост
             await post.save();
+
+            // Возвращаем комментарий
             return comment;
         } catch (error) {
-            throw new Error('Failed to add comment');
+            // Сохраняем оригинальное сообщение об ошибке
+            console.error('Error adding comment:', error);
+            throw new Error(`Failed to add comment: ${error.message}`);
         }
     }
 }

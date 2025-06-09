@@ -5,6 +5,8 @@ export class Comment {
 
     id: string
 
+    @Prop({required: true})
+    authorId: string
 
     @Prop({required: true})
     text: string

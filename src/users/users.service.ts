@@ -18,8 +18,6 @@ export class UsersService {
         @InjectRepository(Friendship)
         private friendshipRepository: Repository<Friendship>,
 
-
-
         private supabaseService: SupabaseService,
     ) {}
 

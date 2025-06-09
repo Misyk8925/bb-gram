@@ -6,6 +6,7 @@ import {PostActionsSchema} from "./entities/post-actions";
 import {PostSchema} from "./entities/post";
 import {CommentSchema} from "./entities/comment";
 import {CommentAuthorSchema} from "./entities/comment-author";
+import {SupabaseModule} from "../common/supabase/supabase.module";
 
 
 
@@ -17,6 +18,7 @@ import {CommentAuthorSchema} from "./entities/comment-author";
           { name: 'Comment', schema: CommentSchema },
           { name: 'CommentAuthor', schema: CommentAuthorSchema },
       ]),
+      SupabaseModule,
   ],
   providers: [PostsService],
   controllers: [PostsController]

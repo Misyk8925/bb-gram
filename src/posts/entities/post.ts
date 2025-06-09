@@ -11,6 +11,9 @@ export class Post {
     id: string
 
     @Prop({required: true})
+    authorId: string
+
+    @Prop({required: true})
     title: string
 
     @Prop()
