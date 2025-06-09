@@ -25,8 +25,8 @@ export class PostsController {
     }
 
     @Post(':postId/like')
-    async likePost(@Param('postId') id: string) {
-        return await this.postsService.likePost(id);
+    async likePost(@Param('postId') id: string, @CurrentUser() user) {
+        return await this.postsService.likePost(id, user.id);
     }
 
     @Get(':postId/comments')

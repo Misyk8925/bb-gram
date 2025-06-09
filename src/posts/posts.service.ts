@@ -4,6 +4,7 @@ import {Post} from "./entities/post";
 import mongoose, {Model} from "mongoose";
 import {PostActions} from "./entities/post-actions";
 import {CommentAuthor} from "./entities/comment-author";
+import {Like} from "./entities/like";
 
 @Injectable()
 export class PostsService {
@@ -18,7 +19,7 @@ export class PostsService {
     async createPost(authorId: string, title: string, description: string, img: string): Promise<Post> {
         try {
             const postActions = new this.postActionsModel({
-                likes: 0,
+                likes: [],
                 reposts: 0,
                 isLiked: false,
                 isReposted: false
@@ -39,18 +40,33 @@ export class PostsService {
         }
     }
 
-    async likePost(postId: string) {
+    async likePost(postId: string, userId: string) {
         try {
             const post = await this.postModel.findById(postId).exec();
             if (!post) {
                 throw new Error('Post not found');
             }
-            await this.postActionsModel.findByIdAndUpdate(
-                post.actions,
-                { $inc: { likes: 1 }, $set: { isLiked: true } }
-            ).exec();
+
+            const postActions = await this.postActionsModel.findById(post.actions).exec();
+            if (!postActions) {
+                throw new Error('Post actions not found');
+            }
+            for (const like of postActions.likes) {
+                if (like.userId === userId) {
+                    throw new Error('Already liked');
+                }
+            }
+            postActions.likes.push({
+                id: new mongoose.Types.ObjectId().toString(),
+                userId,
+                postId
+            });
+
+            this.setIsLiked(post.id)
+
+            await postActions.save();
         } catch (error) {
-            throw new Error('Failed to like post');
+            throw new Error(`Failed to like post: ${error.message}`)
         }
     }
 
@@ -106,6 +122,23 @@ export class PostsService {
             // Сохраняем оригинальное сообщение об ошибке
             console.error('Error adding comment:', error);
             throw new Error(`Failed to add comment: ${error.message}`);
+        }
+    }
+
+    async setIsLiked(postId: string){
+        try {
+            const post = await this.postModel.findById(postId).exec();
+            if (!post) {
+                throw new Error('Post not found');
+            }
+            const postActions = await this.postActionsModel.findById(post.actions).exec();
+            if (!postActions) {
+                throw new Error('Post actions not found');
+            }
+            postActions.isLiked = postActions.likes.length > 0;
+            await postActions.save();
+        } catch (error) {
+            throw new Error(`Failed to set isLiked: ${error.message}`);
         }
     }
 }
