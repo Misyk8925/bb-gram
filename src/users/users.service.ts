@@ -5,6 +5,7 @@ import {Repository} from "typeorm";
 import {SupabaseService} from "../common/supabase/supabase.service";
 import {FriendRequest} from "./entities/friendRequest";
 import {Friendship} from "./entities/friendship";
+import {PostsService} from "../posts/posts.service";
 
 @Injectable()
 export class UsersService {
@@ -19,6 +20,8 @@ export class UsersService {
         private friendshipRepository: Repository<Friendship>,
 
         private supabaseService: SupabaseService,
+
+        private postsService: PostsService
     ) {}
 
     async findAll() {
@@ -147,5 +150,13 @@ export class UsersService {
         await this.friendRequestRepository.delete(friendRequest);
 
 
+    }
+
+    async getPostsOfUser(username: string) {
+        const user = await this.userRepository.findOne({where: {username}});
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return await this.postsService.findPostsByUsername(username);
     }
 }

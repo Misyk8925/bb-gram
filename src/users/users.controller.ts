@@ -61,4 +61,9 @@ export class UsersController {
     async rejectFriendRequest(@Param('username') username: string, @CurrentUser() user) {
         return await this.usersService.rejectFriendRequest(username, user.id);
     }
+
+    @Get(':username/posts')
+    async getFriendsOfUser(@Param('username') username: string) {
+        return await this.usersService.getPostsOfUser(username);
+    }
 }

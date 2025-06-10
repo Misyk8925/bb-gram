@@ -5,6 +5,7 @@ import mongoose, {Model} from "mongoose";
 import {PostActions} from "./entities/post-actions";
 import {CommentAuthor} from "./entities/comment-author";
 import {Like} from "./entities/like";
+import {SupabaseService} from "../common/supabase/supabase.service";
 
 @Injectable()
 export class PostsService {
@@ -13,11 +14,34 @@ export class PostsService {
         @InjectModel('PostActions') private postActionsModel: Model<PostActions>,
         @InjectModel('Comment') private commentModel: Model<Comment>,
         @InjectModel('CommentAuthor') private commentAuthorModel: Model<CommentAuthor>,
+        private readonly supabase: SupabaseService
     ) {
     }
 
-    async createPost(authorId: string, title: string, description: string, img: string): Promise<Post> {
-        try {
+    async createPost(
+                     authorId: string,
+                     authorUsername: string,
+                     title: string,
+                     description: string,
+                     img: string,
+                     buffer:Buffer,
+                     originalName: string,
+                     mimeType:string
+    ): Promise<Post> {
+
+        try{
+            // e.g. prepend timestamp or UUID for unique path
+            const filePath = `posts/${Date.now()}_${originalName}`;
+
+            // upload to bucket called “posts”
+            const uploadResult = await this.supabase.uploadFile(
+                'posts',
+                filePath,
+                buffer,
+                mimeType,
+            );
+
+
             const postActions = new this.postActionsModel({
                 likes: [],
                 reposts: 0,
@@ -28,15 +52,16 @@ export class PostsService {
             const post = new this.postModel(
                 {
                     authorId,
+                    authorUsername: authorUsername,
                     title,
                     description,
-                    img,
+                    img:filePath,
                     actions: postActions
                 });
             await post.save();
             return post;
         } catch (error) {
-            throw new Error('Failed to create post', error);
+            throw new Error(`Failed to add comment: ${error.message}`);
         }
     }
 
@@ -140,5 +165,10 @@ export class PostsService {
         } catch (error) {
             throw new Error(`Failed to set isLiked: ${error.message}`);
         }
+    }
+
+    async findPostsByUsername(username: string ){
+        const posts = await this.postModel.find({authorUsername: username}).exec();
+        return posts;
     }
 }

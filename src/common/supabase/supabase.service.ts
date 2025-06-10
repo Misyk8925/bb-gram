@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {SupabaseClient} from "@supabase/supabase-js";
 
 
@@ -20,5 +20,24 @@ export class SupabaseService {
 
     getClient(): SupabaseClient {
         return this.supabase;
+    }
+
+    async uploadFile(
+        bucket: string,
+        path: string,
+        file: Buffer,
+        contentType: string,
+    ) {
+        const { data, error } = await this.supabase.storage
+            .from(bucket)
+            .upload(path, file, { contentType });
+        if (error) {
+            throw new BadRequestException(`Upload failed: ${error.message}`);
+        }
+        return data; // { Key, publicURL, etc. }
+    }
+
+    getPublicUrl(bucket: string, path: string) {
+        return this.supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
     }
 }

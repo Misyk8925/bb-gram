@@ -21,6 +21,7 @@ import {SupabaseModule} from "../common/supabase/supabase.module";
       SupabaseModule,
   ],
   providers: [PostsService],
-  controllers: [PostsController]
+  controllers: [PostsController],
+    exports: [PostsService],
 })
 export class PostsModule {}

@@ -1,4 +1,6 @@
 import {IsEmail, IsNotEmpty, IsString} from "class-validator";
+import {UploadedFile} from "@nestjs/common";
+import {FileInterceptor} from "@nestjs/platform-express";
 
 
 export class CreateUserDto {
@@ -11,8 +13,7 @@ export class CreateUserDto {
        @IsString()
        username: string;
 
-       @IsString()
-       imgUrl: string;
+       imgUrl: string
 
        @IsString()
        description: string;
