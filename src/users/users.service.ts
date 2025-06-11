@@ -153,7 +153,7 @@ export class UsersService {
     }
 
     async getPostsOfUser(username: string) {
-        const user = await this.userRepository.findOne({where: {username}});
+        const user = await this.userRepository.findOne({where: {email: username}});
         if (!user) {
             throw new Error('User not found');
         }
