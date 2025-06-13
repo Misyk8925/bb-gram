@@ -5,6 +5,8 @@ import {ProfileSchema} from "./entities/profile";
 import {MessageSchema} from "./entities/message";
 import { ChatsService } from './chats.service';
 import { ChatsController } from './chats.controller';
+import {AuthModule} from "../auth/auth.module";
+import {SupabaseModule} from "../common/supabase/supabase.module";
 
 @Module({
     imports: [
@@ -13,8 +15,10 @@ import { ChatsController } from './chats.controller';
             { name: 'Profile', schema: ProfileSchema },
             { name: 'Message', schema: MessageSchema },
         ]),
+        SupabaseModule,
     ],
     providers: [ChatsService],
     controllers: [ChatsController],
+    exports: [ChatsService],
 })
 export class ChatsModule {}

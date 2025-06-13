@@ -7,12 +7,14 @@ import {Friendship} from "./entities/friendship";
 import {SupabaseModule} from "../common/supabase/supabase.module";
 import { UsersController } from './users.controller';
 import {PostsModule} from "../posts/posts.module";
+import {ChatsModule} from "../chats/chats.module";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User, FriendRequest, Friendship]),
     SupabaseModule,
-    PostsModule
+    PostsModule,
+        ChatsModule,
     ],
 
     providers: [UsersService],

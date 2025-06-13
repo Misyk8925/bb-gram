@@ -6,6 +6,8 @@ import {SupabaseService} from "../common/supabase/supabase.service";
 import {FriendRequest} from "./entities/friendRequest";
 import {Friendship} from "./entities/friendship";
 import {PostsService} from "../posts/posts.service";
+import { ChatsService } from '../chats/chats.service';
+import {Profile} from "../chats/entities/profile";
 
 @Injectable()
 export class UsersService {
@@ -21,7 +23,9 @@ export class UsersService {
 
         private supabaseService: SupabaseService,
 
-        private postsService: PostsService
+        private postsService: PostsService,
+
+        private chatsService: ChatsService
     ) {}
 
     async findAll() {
@@ -36,6 +40,15 @@ export class UsersService {
         user.username = username;
         user.imgUrl = imgUrl;
         user.description = description;
+
+        const newProfile: Profile = new Profile()
+        newProfile.supabaseId = id;
+        newProfile.username = username;
+        newProfile.img = imgUrl;
+
+        this.chatsService.addProfile(
+            newProfile
+        )
         return await this.userRepository.save(user);
     }
 

@@ -1,8 +1,14 @@
-import {Body, Controller, Get, Post} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, UseFilters, UseGuards} from '@nestjs/common';
 import {ChatsService} from "./chats.service";
 import {SendMessageDto} from "./DTO/send-message.dto";
+import {AllExceptionsFilter} from "../common/filters/all.exceptions.filter";
+import {AuthGuard} from "../common/guards/auth-guard.guard";
+import {CurrentUser} from "../common/decorators/CurrentUser.decorator";
 
 @Controller('api/chats')
+@UseFilters(AllExceptionsFilter)
+@UseGuards(AuthGuard)
+
 export class ChatsController {
 
     constructor(
@@ -10,19 +16,19 @@ export class ChatsController {
     ) {}
 
     @Get()
-    async getAll() {
-        return await this.chatsService.getAll();
+    async getAll(@CurrentUser() user) {
+        return await this.chatsService.getAll(user.id);
     }
 
     @Get(':username')
-    async getChatWithUser(username: string) {
-        return await this.chatsService.getChatWithUser(username);
+    async getChatWithUser(@CurrentUser()user,@Param('username') username: string) {
+        return await this.chatsService.getChatWithUser(user.id, username);
     }
 
     // TODO missing chatID for consistent chat data
     @Post(':username')
-    async sendMessage(@Body() sendMessageDto: SendMessageDto) {
-        return await this.chatsService.sendMessage(sendMessageDto.username, sendMessageDto.text);
+    async sendMessage(@CurrentUser() user, @Body() sendMessageDto: SendMessageDto) {
+        return await this.chatsService.sendMessage(sendMessageDto.username, sendMessageDto.text, user.id);
     }
 
     // TODO implement PUT endpoint, missing chatID for consistent chat data
