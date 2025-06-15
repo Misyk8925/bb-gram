@@ -109,9 +109,15 @@ export class ChatsService {
                 } else {
                     // Обновляем существующий чат
                     try {
-                        chatWithProfile.messages.push(message._id);
-                        chatWithProfile.lastMessage = message._id;
-                        chatWithProfile.unreadMessages++;
+                        // Альтернативное решение с использованием Mongoose update
+                        await this.chatModel.findByIdAndUpdate(
+                            chatWithProfile._id,
+                            {
+                                $push: { messages: message._id },
+                                $set: { lastMessage: message._id },
+                                $inc: { unreadMessages: 1 }
+                            }
+                        );
                     } catch (updateError) {
                         // Удаляем созданное сообщение, если не удалось обновить чат
                         await this.messageModel.findByIdAndDelete(message._id).exec();
