@@ -32,13 +32,43 @@ export class UsersService {
         return await this.userRepository.find();
     }
 
-    async createUser(name: string, email: string,id:string, username: string, imgUrl: string, description: string) {
+    async createUser(name: string,
+                     email: string,
+                     id:string,
+                     username: string,
+                     imgUrl: string,
+                     description: string,
+                     buffer: Buffer,
+                     originalName: string,
+                     mimeType: string) {
+
+        let filePath: string
+        try {
+            const safeFileName = originalName
+                .replace(/[^\w\s.-]/g, '')  // Удаляем все, кроме букв, цифр, пробелов, точек и дефисов
+                .replace(/[а-яА-ЯёЁ]/g, 'x') // Заменяем кириллицу на 'x'
+                .replace(/\s+/g, '_');      // Заменяем пробелы на подчеркивания
+
+            filePath = `users/${Date.now()}_${originalName}`;
+
+            const uploadResult = await this.supabaseService.uploadFile(
+                'users',
+                filePath,
+                buffer,
+                mimeType,
+            );
+        }
+        catch (error) {
+            Logger.error('Error uploading file to Supabase', error);
+            throw new Error('Failed to upload file');
+        }
+
         const user = new User();
         user.id = id;
         user.name = name;
         user.email = email;
         user.username = username;
-        user.imgUrl = imgUrl;
+        user.imgUrl = filePath;
         user.description = description;
 
         const newProfile: Profile = new Profile()
@@ -166,7 +196,7 @@ export class UsersService {
     }
 
     async getPostsOfUser(username: string) {
-        const user = await this.userRepository.findOne({where: {email: username}});
+        const user = await this.userRepository.findOne({where: {username: username}});
         if (!user) {
             throw new Error('User not found');
         }

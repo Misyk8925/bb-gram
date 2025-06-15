@@ -1,4 +1,15 @@
-import {Body, Controller, Get, Param, Patch, Post, UseFilters, UseGuards} from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Patch,
+    Post,
+    UploadedFile,
+    UseFilters,
+    UseGuards,
+    UseInterceptors
+} from '@nestjs/common';
 import {UsersService} from "./users.service";
 import {CreateUserDto} from "./DTO/CreateUser.dto";
 import {UpdateUserDto} from "./DTO/UpdateUser.dto";
@@ -7,6 +18,8 @@ import {AllExceptionsFilter} from "../common/filters/all.exceptions.filter";
 import {HttpAdapterHost} from "@nestjs/core";
 import {AuthGuard} from "../common/guards/auth-guard.guard";
 import {CurrentUser} from "../common/decorators/CurrentUser.decorator";
+import {FileInterceptor} from "@nestjs/platform-express";
+import * as multer from "multer";
 
 @Controller('api/users')
 @UseFilters(AllExceptionsFilter)
@@ -18,14 +31,27 @@ export class UsersController {
     }
 
     @Post('create')
-    async createUser(@Body() createUserDto: CreateUserDto, @CurrentUser() user) {
+    @UseInterceptors(
+        FileInterceptor('img', {
+            storage: multer.memoryStorage(), // Use default memory storage
+            limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+        })
+    )
+    async createUser(
+        @Body() createUserDto: CreateUserDto,
+        @CurrentUser() user,
+        @UploadedFile() file: Express.Multer.File)
+    {
         return await this.usersService.createUser(
             createUserDto.name,
             user.email,
             user.id,
             createUserDto.username,
             createUserDto.imgUrl,
-            createUserDto.description);
+            createUserDto.description,
+            file.buffer,
+            file.originalname,
+            file.mimetype);
     }
 
     @Patch()

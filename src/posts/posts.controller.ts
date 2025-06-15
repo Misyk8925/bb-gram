@@ -4,7 +4,6 @@ import {
     Post,
     Get,
     Param,
-    Req,
     UseGuards,
     UseFilters,
     UseInterceptors,
@@ -17,8 +16,7 @@ import {AllExceptionsFilter} from "../common/filters/all.exceptions.filter";
 import {AuthGuard} from "../common/guards/auth-guard.guard";
 import {CurrentUser} from "../common/decorators/CurrentUser.decorator";
 import {FileInterceptor} from "@nestjs/platform-express";
-import * as multer from "multer";
-import {SupabaseService} from "../common/supabase/supabase.service";
+import * as multer from 'multer';
 import { CurrentUserInterceptor } from '../common/interceptors/current-user.interceptor'; // Импортируем интерцептор
 
 @Controller('api/posts')
@@ -40,10 +38,8 @@ export class PostsController {
     async createPost(
         @Body() createPostDto: CreatePostDto,
         @CurrentUser() user,
-        @UploadedFile() file : Express.Multer.File){
-
-        console.log(user)
-        console.log(createPostDto)
+        @UploadedFile() file : Express.Multer.File)
+    {
         return await this.postsService.createPost(
             user.id,
             user.username,

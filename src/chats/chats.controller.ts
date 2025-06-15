@@ -25,7 +25,6 @@ export class ChatsController {
         return await this.chatsService.getChatWithUser(user.id, username);
     }
 
-    // TODO missing chatID for consistent chat data
     @Post(':username')
     async sendMessage(@CurrentUser() user, @Body() sendMessageDto: SendMessageDto) {
         return await this.chatsService.sendMessage(sendMessageDto.username, sendMessageDto.text, user.id);

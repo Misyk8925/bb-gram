@@ -15,7 +15,7 @@ export class ChatsService {
 
     async getAll(SenderId: string): Promise<Chat[]> {
         try {
-            return await this.chatModel.find({senderId: SenderId}).exec();
+            return await this.chatModel.find({ $or: [{ user1_id: SenderId }, { user2_id: SenderId }] }).exec();
         } catch (error) {
             throw new Error('Failed to fetch chats', error);
         }
