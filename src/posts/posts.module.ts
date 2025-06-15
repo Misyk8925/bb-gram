@@ -7,6 +7,9 @@ import {PostSchema} from "./entities/post";
 import {CommentSchema} from "./entities/comment";
 import {CommentAuthorSchema} from "./entities/comment-author";
 import {SupabaseModule} from "../common/supabase/supabase.module";
+import { CurrentUserInterceptor } from '../common/interceptors/current-user.interceptor'; // Импортируем интерцептор
+import { TypeOrmModule } from '@nestjs/typeorm'; // Импортируем TypeOrmModule
+import { User } from '../users/entities/user'; // Импортируем сущность User
 
 
 
@@ -19,8 +22,9 @@ import {SupabaseModule} from "../common/supabase/supabase.module";
           { name: 'CommentAuthor', schema: CommentAuthorSchema },
       ]),
       SupabaseModule,
+      TypeOrmModule.forFeature([User]), // Добавляем User для доступа к DataSource/Repository в этом модуле
   ],
-  providers: [PostsService],
+  providers: [PostsService, CurrentUserInterceptor], // Добавляем CurrentUserInterceptor в провайдеры
   controllers: [PostsController],
     exports: [PostsService],
 })
