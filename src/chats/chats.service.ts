@@ -47,7 +47,7 @@ export class ChatsService {
             }
 
             // Проверка, что пользователь не отправляет сообщение самому себе
-            if (profileWithName.id === user1_Id) {
+            if (profileWithName.supabaseId === user1_Id) {
                 throw new Error('Cannot send message to yourself');
             }
 
@@ -93,11 +93,12 @@ export class ChatsService {
                 // Если чат не найден, создаем новый
                 if (!chatWithProfile) {
                     try {
+
                         chatWithProfile = new this.chatModel({
                             user1_id: user1_Id,
                             user2_id: profileWithName.supabaseId,
                             profile: profileWithName._id,
-                            messages: [message._id],
+                            messages: [],
                             lastMessage: message._id,
                             unreadMessages: 1
                         });
@@ -113,7 +114,7 @@ export class ChatsService {
                         await this.chatModel.findByIdAndUpdate(
                             chatWithProfile._id,
                             {
-                                $push: { messages: message._id },
+                                $push: { messages: message },
                                 $set: { lastMessage: message._id },
                                 $inc: { unreadMessages: 1 }
                             }

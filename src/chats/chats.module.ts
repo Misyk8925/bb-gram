@@ -7,6 +7,7 @@ import { ChatsService } from './chats.service';
 import { ChatsController } from './chats.controller';
 import {AuthModule} from "../auth/auth.module";
 import {SupabaseModule} from "../common/supabase/supabase.module";
+import { ChatsGateway } from './gateway/chats.gateway';
 
 @Module({
     imports: [
@@ -17,7 +18,7 @@ import {SupabaseModule} from "../common/supabase/supabase.module";
         ]),
         SupabaseModule,
     ],
-    providers: [ChatsService],
+    providers: [ChatsService, ChatsGateway],
     controllers: [ChatsController],
     exports: [ChatsService],
 })
