@@ -15,9 +15,14 @@ export class ChatsService {
 
     async getAll(SenderId: string): Promise<Chat[]> {
         try {
-            return await this.chatModel.find({ $or: [{ user1_id: SenderId }, { user2_id: SenderId }] }).exec();
+            return await this.chatModel
+                .find({ $or: [{ user1_id: SenderId }, { user2_id: SenderId }] })
+                .populate('profile')
+                .populate('messages')
+                .populate('lastMessage')
+                .exec();
         } catch (error) {
-            throw new Error('Failed to fetch chats', error);
+            throw new Error(`Failed to fetch chats: ${error.message}`);
         }
     }
 
