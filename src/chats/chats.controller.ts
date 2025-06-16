@@ -26,8 +26,11 @@ export class ChatsController {
     }
 
     @Post(':username')
-    async sendMessage(@CurrentUser() user, @Body() sendMessageDto: SendMessageDto) {
-        return await this.chatsService.sendMessage(sendMessageDto.username, sendMessageDto.text, user.id);
+    async sendMessage(@CurrentUser() user,
+                      @Param('username') username: string,
+                      @Body() sendMessageDto: SendMessageDto)
+    {
+        return await this.chatsService.sendMessage(username, sendMessageDto.text, user.id);
     }
 
     @Put('read/all')
