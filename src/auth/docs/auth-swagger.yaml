@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+  title: Authentication API
+  description: API для авторизации и управления пользователями
+  version: 1.0.0
+paths:
+  /api/auth/signup:
+    post:
+      summary: Регистрация нового пользователя
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthDto'
+      responses:
+        201:
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                  session:
+                    type: object
+        400:
+          description: Неверные данные запроса
+        409:
+          description: Пользователь с таким email уже существует
+
+  /api/auth/signin:
+    post:
+      summary: Вход в систему
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthDto'
+      responses:
+        200:
+          description: Успешная авторизация
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+                  session:
+                    type: object
+        401:
+          description: Неверный email или пароль
+        400:
+          description: Неверные данные запроса
+
+  /api/auth/signout:
+    post:
+      summary: Выход из системы
+      tags:
+        - Auth
+      responses:
+        200:
+          description: Успешный выход
+        401:
+          description: Пользователь не авторизован
+
+  /api/auth/me:
+    get:
+      summary: Получение данных текущего пользователя
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        200:
+          description: Данные пользователя
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: object
+        401:
+          description: Пользователь не авторизован
+
+  /api/auth/refresh-token:
+    post:
+      summary: Обновление токена доступа
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        200:
+          description: Токен успешно обновлен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    type: object
+        401:
+          description: Невалидный токен
+
+  /api/auth/reset-password:
+    post:
+      summary: Запрос на сброс пароля
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        200:
+          description: Инструкции по сбросу пароля отправлены на email
+        400:
+          description: Неверный email
+
+  /api/auth/update-password:
+    post:
+      summary: Обновление пароля пользователя
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAttributes'
+      responses:
+        200:
+          description: Пароль успешно обновлен
+        400:
+          description: Неверные данные
+        401:
+          description: Пользователь не авторизован
+
+components:
+  schemas:
+    AuthDto:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        password:
+          type: string
+          format: password
+          description: Пароль пользователя
+          minLength: 6
+
+    UserAttributes:
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          description: Новый пароль пользователя
+          minLength: 6
+        data:
+          type: object
+          description: Дополнительные данные пользователя
