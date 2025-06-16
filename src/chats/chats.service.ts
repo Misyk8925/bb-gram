@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {InjectModel} from "@nestjs/mongoose";
-import {Model} from "mongoose";
+import { Model, Types } from "mongoose";
 import {Chat } from "./entities/chat";
 import {Profile} from "./entities/profile";
 import {Message} from "./entities/message";
@@ -158,6 +158,78 @@ export class ChatsService {
             return await newProfile.save();
         } catch (error) {
             throw new Error('Failed to add profile');
+        }
+    }
+
+    async markAllMessagesAsRead(userId: string): Promise<{ status: string; updatedMessagesCount: number; updatedChatsCount: number }> {
+        try {
+            const userChats = await this.getAll(userId);
+            if (!userChats || userChats.length === 0) {
+                return { status: 'No chats found for this user.', updatedMessagesCount: 0, updatedChatsCount: 0 };
+            }
+
+            const uniqueMessageObjectIds = new Set<string>(); // To store unique ObjectId strings to prevent duplicates
+
+            userChats.forEach(chat => {
+                // 1. Process messages in the chat.messages array
+                if (chat.messages && chat.messages.length > 0) {
+                    chat.messages.forEach(message => {
+                        // Приводим message к типу, включающему _id, так как Message из entities/message.ts его не объявляет,
+                        // но Mongoose документы его содержат.
+                        const msgDoc = message as Message & { _id: Types.ObjectId };
+                        // Ваш существующий console.log, немного измененный для ясности
+                        console.log(`Checking message in chat.messages array: ${msgDoc._id}, isRead: ${msgDoc.isRead}, senderId: ${msgDoc.supabaseSenderId}, userId: ${userId}`);
+                        if (msgDoc && msgDoc._id && !msgDoc.isRead && msgDoc.supabaseSenderId !== userId) {
+                            uniqueMessageObjectIds.add(msgDoc._id.toString());
+                        }
+                    });
+                }
+
+                // 2. Process the chat.lastMessage
+                // chat.lastMessage populated by getAll(), so it's a Message document.
+                // _id is from Mongoose document, isRead and supabaseSenderId are from Message entity.
+                const lastMessageDoc = chat.lastMessage as Message & { _id?: Types.ObjectId; isRead?: boolean; supabaseSenderId?: string };
+
+                if (lastMessageDoc && lastMessageDoc._id &&
+                    typeof lastMessageDoc.isRead === 'boolean' && // Ensure isRead is present
+                    lastMessageDoc.supabaseSenderId) { // Ensure supabaseSenderId is present
+
+                    console.log(`Checking message in chat.lastMessage: ${lastMessageDoc._id}, isRead: ${lastMessageDoc.isRead}, senderId: ${lastMessageDoc.supabaseSenderId}, userId: ${userId}`);
+                    if (!lastMessageDoc.isRead && lastMessageDoc.supabaseSenderId !== userId) {
+                        uniqueMessageObjectIds.add(lastMessageDoc._id.toString());
+                    }
+                }
+            });
+
+            // Convert unique string IDs from Set back to Types.ObjectId for the $in query
+            const messageIdsToUpdate: Types.ObjectId[] = [];
+            uniqueMessageObjectIds.forEach(idString => {
+                messageIdsToUpdate.push(new Types.ObjectId(idString));
+            });
+
+            let updatedMessagesCount = 0;
+            if (messageIdsToUpdate.length > 0) {
+                const messageUpdateResult = await this.messageModel.updateMany(
+                    { _id: { $in: messageIdsToUpdate } }, // Condition isRead and senderId already handled when populating messageIdsToUpdate
+                    { $set: { isRead: true } }
+                ).exec();
+                updatedMessagesCount = messageUpdateResult.modifiedCount;
+                console.log(`Messages update result: ${updatedMessagesCount} messages marked as read.`); // Добавлено логирование
+            }
+
+            const chatIdsToUpdate = userChats.map(chat => chat.id);
+            let updatedChatsCount = 0;
+            if (chatIdsToUpdate.length > 0) {
+                const chatUpdateResult = await this.chatModel.updateMany(
+                    { _id: { $in: chatIdsToUpdate }, unreadMessages: { $gt: 0 } },
+                    { $set: { unreadMessages: 0 } }
+                ).exec();
+                updatedChatsCount = chatUpdateResult.modifiedCount;
+            }
+
+            return { status: 'All messages marked as read.', updatedMessagesCount, updatedChatsCount };
+        } catch (error) {
+            throw new Error(`Failed to mark messages as read: ${error.message}`);
         }
     }
 }

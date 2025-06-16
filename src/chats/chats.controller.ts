@@ -1,4 +1,4 @@
-import {Body, Controller, Get, Param, Post, UseFilters, UseGuards} from '@nestjs/common';
+import {Body, Controller, Get, Param, Post, Put, UseFilters, UseGuards} from '@nestjs/common';
 import {ChatsService} from "./chats.service";
 import {SendMessageDto} from "./DTO/send-message.dto";
 import {AllExceptionsFilter} from "../common/filters/all.exceptions.filter";
@@ -30,5 +30,10 @@ export class ChatsController {
         return await this.chatsService.sendMessage(sendMessageDto.username, sendMessageDto.text, user.id);
     }
 
-    // TODO implement PUT endpoint, missing chatID for consistent chat data
+    @Put('read/all')
+    async markAllMessagesAsRead(@CurrentUser() user) {
+        return await this.chatsService.markAllMessagesAsRead(user.id);
+    }
+
+
 }
