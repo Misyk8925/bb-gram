@@ -4,6 +4,7 @@ import {Post} from "@nestjs/common";
 import {AuthDto} from "./dto/auth.dto";
 import {UserAttributes} from "@supabase/supabase-js";
 import {AuthGuard} from "../common/guards/auth-guard.guard";
+import {CurrentUser} from "../common/decorators/CurrentUser.decorator";
 
 @Controller('api/auth')
 export class AuthController {
@@ -31,8 +32,8 @@ export class AuthController {
     }
 
     @Get('me')
-    async getMe(@Body() token: string) {
-        return this.authService.getMe(token);
+    async getMe(@CurrentUser() user) {
+        return this.authService.getMe(user.access_token);
     }
 
     @Post('refresh-token')
