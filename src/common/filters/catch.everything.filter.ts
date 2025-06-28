@@ -20,6 +20,8 @@ export class CatchEverythingFilter implements ExceptionFilter {
         let responseBody: any
         if (httpStatus === 500) {
 
+            this.logger.error(exception)
+
             responseBody = {
                 statusCode: httpStatus,
                 timestamp: new Date().toISOString(),

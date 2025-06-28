@@ -7,6 +7,7 @@ import {AuthGuard} from "../common/guards/auth-guard.guard";
 import {CurrentUser} from "../common/decorators/CurrentUser.decorator";
 
 @Controller('api/auth')
+
 export class AuthController {
 
     constructor(
@@ -32,6 +33,7 @@ export class AuthController {
     }
 
     @Get('me')
+    @UseGuards(AuthGuard)
     async getMe(@CurrentUser() user) {
         return this.authService.getMe(user.access_token);
     }
